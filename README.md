@@ -19,6 +19,12 @@ Java-based command-line tools for interacting with Jira Zephyr APIs without requ
 
 **Note:** This step is only needed once, or if the `lib/` directory is missing. If you already have all JAR files in the `lib/` directory, you can skip this step.
 
+**Important:** If you have older library versions and want to update to the latest secure versions, delete the old JARs and re-run this script:
+```bash
+rm -rf lib/*.jar
+./download-libs.sh
+```
+
 Download all required JAR libraries:
 
 ```bash
@@ -26,9 +32,11 @@ Download all required JAR libraries:
 ```
 
 This script downloads all necessary dependencies into the `lib/` directory:
-- Apache HttpClient (for HTTP requests)
-- Jackson (for JSON processing)
-- SLF4J and Logback (for logging)
+- Apache HttpClient 4.5.15 (for HTTP requests)
+- Jackson 2.17.1 (for JSON processing)
+- SLF4J 2.0.9 and Logback 1.5.3 (for logging)
+
+**Security Note:** All libraries are updated to the latest stable versions with security patches as of December 2024. To check for vulnerabilities, run `./check-vulnerabilities.sh` after downloading libraries.
 
 **After libraries are downloaded:** The `download-libs.sh` script is no longer needed unless you need to re-download libraries (e.g., if they get deleted or you're setting up on a new machine).
 
@@ -245,11 +253,49 @@ The tools interact with the following Jira Zephyr APIs:
 
 The tools use SLF4J with Logback for logging. Logs are output to the console with timestamps and log levels. Debug-level logging is enabled for API request/response details.
 
-## Security Notes
+## Security
+
+### Library Security
+
+All libraries used in this project are kept up-to-date with the latest secure versions:
+
+- **Apache HttpClient 4.5.15** - Latest stable 4.5.x release with security patches
+- **Apache HttpCore 4.4.16** - Compatible with HttpClient 4.5.15
+- **Jackson 2.17.1** - Latest stable release with deserialization vulnerability fixes
+- **SLF4J 1.7.36** - Stable release (2.0.x has breaking changes, using 1.7.x for compatibility)
+- **Logback 1.5.3** - Latest stable release with security patches
+
+### Checking for Vulnerabilities
+
+To check for known vulnerabilities in the project dependencies:
+
+```bash
+./check-vulnerabilities.sh
+```
+
+This script will:
+- Use OWASP Dependency-Check if installed (recommended)
+- Provide instructions for manual checking if tools are not available
+- Generate vulnerability reports in HTML and JSON formats
+
+**Recommended Tools for Vulnerability Scanning:**
+1. **OWASP Dependency-Check** - Free, open-source tool
+   - Download: https://github.com/dependency-check/dependency-check/releases
+   - Run: `dependency-check.sh --scan lib --out .`
+2. **Snyk** - Commercial tool with free tier
+   - Install: `npm install -g snyk`
+   - Run: `snyk test`
+3. **IntelliJ IDEA Package Checker** - Built-in IDE feature
+   - Go to: Code > Analyze Code > Show Vulnerable Dependencies
+
+### Security Best Practices
 
 - **Never commit credentials to version control**
 - Consider using environment variables or secure credential storage for passwords
 - Use HTTPS for all Jira API communications (as configured in the base URL)
+- **Regularly update libraries** - Run `./download-libs.sh` periodically to get latest versions
+- **Scan for vulnerabilities** - Run `./check-vulnerabilities.sh` regularly, especially after library updates
+- Monitor security advisories for all dependencies
 
 ## Project Structure
 
@@ -257,6 +303,7 @@ The tools use SLF4J with Logback for logging. Logs are output to the console wit
 JiraTool/
 ├── build.sh                 # Build script - REQUIRED: compiles and creates JARs
 ├── download-libs.sh         # One-time setup: downloads libraries (optional if lib/ exists)
+├── check-vulnerabilities.sh # Security: checks for known vulnerabilities in dependencies
 ├── README.md
 ├── QUICKSTART.md
 ├── src/
